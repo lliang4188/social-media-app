@@ -101,7 +101,9 @@ export async function craetePost(post: INewPost) {
 
     // Get file url
     const fileUrl = getFilePreview(uploadedFile.$id)
+    console.log("🚀 ~ file: api.ts:104 ~ craetePost ~ fileUrl:", fileUrl)
 
+    
     if (!fileUrl) {
       deleteFile(uploadedFile.$id)
       throw Error
@@ -152,7 +154,7 @@ export async function uploadFile(file: File) {
   }
 }
 
-export async function getFilePreview(fileId: string) {
+export function getFilePreview(fileId: string) {
   try {
     const fileUrl = storage.getFilePreview(
       appwriteConfig.storageId,
@@ -195,4 +197,63 @@ export async function getRecentPosts() {
   
   return posts
   
+}
+
+
+export async function likePost(postId: string, likesArray: string[]) {
+  try {
+    const updatedPost = await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId,
+      {
+        likes: likesArray
+      }
+    )
+
+    if(!updatedPost) throw Error
+
+    return updatedPost
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function savePost(postId: string, userId: string) {
+  try {
+    const updatedPost = await database.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.saveCollectionId,
+      ID.unique(),
+      {
+        user: userId,
+        post: postId
+      }
+    )
+
+    if(!updatedPost) throw Error
+
+    return updatedPost
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function deleteSavePost(savedRecordId: string) {
+  try {
+    const statusCode = await database.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.saveCollectionId,
+      savedRecordId
+    )
+
+    if(!statusCode) throw Error
+
+    return { status: 'ok'}
+    
+  } catch (error) {
+    console.log(error)
+  }
 }
